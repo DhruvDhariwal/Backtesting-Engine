@@ -189,7 +189,7 @@ def calculate_buy_hold_stats(portfolio_data, initial_capital):
     }
 
 def plot_results(portfolio_obj, symbol, bars, initial_capital):
-    """Plot the strategy results with comparisons to buy & hold"""
+    """Plot the strategy results with comparisons to buy & hold using log scale"""
     
     portfolio_data = portfolio_obj.portfolio_results
     strategy_stats = portfolio_obj.get_performance_stats()
@@ -208,7 +208,7 @@ def plot_results(portfolio_obj, symbol, bars, initial_capital):
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(16, 12))
     fig.patch.set_facecolor('white')
     
-    # Top Left: Stock price with moving averages and signals
+    # Top Left: Stock price with moving averages and signals (LINEAR SCALE)
     ax1.plot(portfolio_data.index, portfolio_data['Price'], 
              color='blue', lw=1.5, label=f'{symbol} Price')
     
@@ -238,14 +238,16 @@ def plot_results(portfolio_obj, symbol, bars, initial_capital):
     ax1.legend()
     ax1.grid(True, alpha=0.3)
     
-    # Top Right: Strategy vs Stock Buy & Hold Comparison
+    # Top Right: Strategy vs Stock Buy & Hold Comparison (LOG SCALE)
     ax2.plot(portfolio_data.index, portfolio_data['Portfolio_Value'], 
              color='purple', lw=2, label='MA Cross Strategy')
     ax2.plot(stock_buy_hold.index, stock_buy_hold['Portfolio_Value'], 
              color='blue', lw=2, label=f'{symbol} Buy & Hold')
     
-    ax2.set_ylabel('Portfolio Value ($)')
-    ax2.set_title(f'Strategy vs {symbol} Buy & Hold')
+    # Set logarithmic scale for y-axis
+    ax2.set_yscale('log')
+    ax2.set_ylabel('Portfolio Value ($) - Log Scale')
+    ax2.set_title(f'Strategy vs {symbol} Buy & Hold (Log Scale)')
     ax2.legend()
     ax2.grid(True, alpha=0.3)
     
@@ -264,15 +266,17 @@ Max Drawdown: {stock_bh_stats['Max Drawdown']:.2%}"""
              bbox=dict(boxstyle="round,pad=0.5", facecolor="lightgreen", alpha=0.8),
              verticalalignment='top', fontsize=9, fontfamily='monospace')
     
-    # Bottom Left: Strategy vs S&P 500 Comparison
+    # Bottom Left: Strategy vs S&P 500 Comparison (LOG SCALE)
     ax3.plot(portfolio_data.index, portfolio_data['Portfolio_Value'], 
              color='purple', lw=2, label='MA Cross Strategy')
     ax3.plot(sp500_buy_hold.index, sp500_buy_hold['Portfolio_Value'], 
              color='orange', lw=2, label='S&P 500 Buy & Hold')
     
-    ax3.set_ylabel('Portfolio Value ($)')
+    # Set logarithmic scale for y-axis
+    ax3.set_yscale('log')
+    ax3.set_ylabel('Portfolio Value ($) - Log Scale')
     ax3.set_xlabel('Date')
-    ax3.set_title('Strategy vs S&P 500 Buy & Hold')
+    ax3.set_title('Strategy vs S&P 500 Buy & Hold (Log Scale)')
     ax3.legend()
     ax3.grid(True, alpha=0.3)
     
@@ -291,30 +295,27 @@ Alpha: {strategy_stats['CAGR'] - sp500_bh_stats['CAGR']:.2%}"""
              bbox=dict(boxstyle="round,pad=0.5", facecolor="lightyellow", alpha=0.8),
              verticalalignment='top', fontsize=9, fontfamily='monospace')
     
-    # Bottom Right: All Three Strategies Normalized Comparison
-    # Normalize all portfolios to start at 100 for easy comparison
-    strategy_normalized = (portfolio_data['Portfolio_Value'] / initial_capital) * 100
-    stock_bh_normalized = (stock_buy_hold['Portfolio_Value'] / initial_capital) * 100
-    sp500_bh_normalized = (sp500_buy_hold['Portfolio_Value'] / initial_capital) * 100
-    
-    ax4.plot(portfolio_data.index, strategy_normalized, 
+    # Bottom Right: All Three Strategies Comparison (LOG SCALE)
+    ax4.plot(portfolio_data.index, portfolio_data['Portfolio_Value'], 
              color='purple', lw=2, label='MA Cross Strategy')
-    ax4.plot(stock_buy_hold.index, stock_bh_normalized, 
+    ax4.plot(stock_buy_hold.index, stock_buy_hold['Portfolio_Value'], 
              color='blue', lw=2, label=f'{symbol} Buy & Hold')
-    ax4.plot(sp500_buy_hold.index, sp500_bh_normalized, 
+    ax4.plot(sp500_buy_hold.index, sp500_buy_hold['Portfolio_Value'], 
              color='orange', lw=2, label='S&P 500 Buy & Hold')
     
-    ax4.set_ylabel('Normalized Value (Base = 100)')
+    # Set logarithmic scale for y-axis
+    ax4.set_yscale('log')
+    ax4.set_ylabel('Portfolio Value ($) - Log Scale')
     ax4.set_xlabel('Date')
-    ax4.set_title('Normalized Performance Comparison')
+    ax4.set_title('All Strategies Comparison (Log Scale)')
     ax4.legend()
     ax4.grid(True, alpha=0.3)
     
     # Add final values
-    final_text = f"""Final Values (Normalized):
-MA Cross: {strategy_normalized.iloc[-1]:.1f}
-{symbol} B&H: {stock_bh_normalized.iloc[-1]:.1f}
-S&P 500 B&H: {sp500_bh_normalized.iloc[-1]:.1f}"""
+    final_text = f"""Final Portfolio Values:
+MA Cross: ${portfolio_data['Portfolio_Value'].iloc[-1]:,.0f}
+{symbol} B&H: ${stock_buy_hold['Portfolio_Value'].iloc[-1]:,.0f}
+S&P 500 B&H: ${sp500_buy_hold['Portfolio_Value'].iloc[-1]:,.0f}"""
     
     ax4.text(0.02, 0.98, final_text, transform=ax4.transAxes, 
              bbox=dict(boxstyle="round,pad=0.5", facecolor="lightcyan", alpha=0.8),
