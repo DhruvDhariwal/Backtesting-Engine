@@ -117,6 +117,7 @@ class FullInvestmentPortfolio(Portfolio):
         # Calculate volatility (annualized)
         daily_returns = self.portfolio_results['Strategy_Returns'].dropna()
         volatility = daily_returns.std() * np.sqrt(252)  # 252 trading days per year
+        sharpe_ratio = self.portfolio_results['Portfolio_Returns'].mean() / self.portfolio_results['Portfolio_Returns'].std() * np.sqrt(252)
         
         # Calculate maximum drawdown
         portfolio_values = self.portfolio_results['Portfolio_Value']
@@ -128,6 +129,7 @@ class FullInvestmentPortfolio(Portfolio):
             'CAGR': cagr,
             'Total Return': total_return,
             'Volatility': volatility,
+            'Sharpe Ratio': sharpe_ratio,
             'Max Drawdown': max_drawdown,
             'Start Value': start_value,
             'End Value': end_value,
@@ -172,6 +174,9 @@ def calculate_buy_hold_stats(portfolio_data, initial_capital):
     daily_returns = portfolio_data['Strategy_Returns'].dropna()
     volatility = daily_returns.std() * np.sqrt(252)
     
+    # Calculate Sharpe Ratio
+    sharpe_ratio = daily_returns.mean() / daily_returns.std() * np.sqrt(252)
+
     # Calculate maximum drawdown
     portfolio_values = portfolio_data['Portfolio_Value']
     peak = portfolio_values.expanding().max()
@@ -182,6 +187,7 @@ def calculate_buy_hold_stats(portfolio_data, initial_capital):
         'CAGR': cagr,
         'Total Return': total_return,
         'Volatility': volatility,
+        'Sharpe Ratio': sharpe_ratio,
         'Max Drawdown': max_drawdown,
         'Start Value': start_value,
         'End Value': end_value,
@@ -256,11 +262,13 @@ def plot_results(portfolio_obj, symbol, bars, initial_capital):
 CAGR: {strategy_stats['CAGR']:.2%}
 Total Return: {strategy_stats['Total Return']:.2%}
 Max Drawdown: {strategy_stats['Max Drawdown']:.2%}
+Sharpe Ratio: {strategy_stats['Sharpe Ratio']:.2f}
 
 {symbol} Buy & Hold:
 CAGR: {stock_bh_stats['CAGR']:.2%}
 Total Return: {stock_bh_stats['Total Return']:.2%}
-Max Drawdown: {stock_bh_stats['Max Drawdown']:.2%}"""
+Max Drawdown: {stock_bh_stats['Max Drawdown']:.2%}
+Sharpe Ratio: {stock_bh_stats['Sharpe Ratio']:.2f}"""
     
     ax2.text(0.02, 0.98, strategy_text, transform=ax2.transAxes, 
              bbox=dict(boxstyle="round,pad=0.5", facecolor="lightgreen", alpha=0.8),
@@ -284,10 +292,14 @@ Max Drawdown: {stock_bh_stats['Max Drawdown']:.2%}"""
     sp500_text = f"""MA Cross Strategy:
 CAGR: {strategy_stats['CAGR']:.2%}
 Volatility: {strategy_stats['Volatility']:.2%}
+Max Drawdown: {strategy_stats['Max Drawdown']:.2%}
+Sharpe Ratio: {strategy_stats['Sharpe Ratio']:.2f}
 
 S&P 500 Buy & Hold:
 CAGR: {sp500_bh_stats['CAGR']:.2%}
 Volatility: {sp500_bh_stats['Volatility']:.2%}
+Max Drawdown: {sp500_bh_stats['Max Drawdown']:.2%}
+Sharpe Ratio: {sp500_bh_stats['Sharpe Ratio']:.2f}
 
 Alpha: {strategy_stats['CAGR'] - sp500_bh_stats['CAGR']:.2%}"""
     
